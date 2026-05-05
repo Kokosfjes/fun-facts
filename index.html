@@ -301,7 +301,7 @@ function renderHome() {
   root.append(w);
   state.errMsg = '';
   w.querySelector('#host').onclick = () => askName('host');
-  w.querySelector('#join').onclick = () => state.screen='joinForm', renderJoinForm();
+  w.querySelector('#join').onclick = () => { state.screen='joinForm'; renderJoinForm(); };
 }
 
 function askName(role) {
