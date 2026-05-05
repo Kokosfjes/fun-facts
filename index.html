@@ -38,6 +38,18 @@
   .err { background: var(--bad); color:#fff; padding: 10px; border-radius: 8px; margin-top: 12px; text-align:center; }
   .info { color:#aac; font-size:14px; text-align:center; margin: 8px 0; }
   .badge-host { background: var(--accent); color:#222; font-size:11px; padding: 2px 6px; border-radius:4px; margin-left: 6px; font-weight: 700; }
+  .guess-row { display:grid; grid-template-columns: 1fr 130px; gap:8px; margin-bottom:8px; align-items:center; }
+  .guess-row .gname { background:#0e1a2b; padding:10px 14px; border-radius:8px; font-weight:600; }
+  .guess-row input { padding: 10px; font-size:16px; }
+  .score-pos { color: var(--good); font-weight:700; }
+  .score-zero { color: #aac; }
+  .score-tag { display:inline-block; background:#345; padding:2px 8px; border-radius:6px; font-size:12px; margin-left:6px; }
+  .total-score { color: var(--accent); font-weight: 700; font-size: 14px; margin-left: 8px; }
+  .scoreboard { background:#0e1a2b; padding:12px; border-radius:10px; margin: 12px 0; }
+  .scoreboard h3 { margin: 0 0 8px; color: var(--accent); font-size: 16px; }
+  .scoreboard .row-s { display:flex; justify-content: space-between; padding: 4px 0; }
+  .my-answer { background:#0e1a2b; padding: 10px 14px; border-radius:8px; text-align:center; margin-bottom: 12px; color: #aac; }
+  .my-answer b { color: var(--accent); }
 </style>
 </head>
 <body>
@@ -46,18 +58,17 @@
 <script>
 // ============= QUESTIONS =============
 const QUESTIONS = [
-  { type:'scale', text:'Hvor glad er du i sterk mat? (1-100)', unit:'', min:1, max:100 },
+  // Skala 1-100 (færre)
   { type:'scale', text:'Hvor flink er du til å lyve? (1-100)', unit:'', min:1, max:100 },
   { type:'scale', text:'Hvor sjenert er du? (1-100)', unit:'', min:1, max:100 },
   { type:'scale', text:'Hvor sannsynlig er det at du overlever en zombieapokalypse? (1-100)', unit:'%', min:1, max:100 },
   { type:'scale', text:'Hvor god er du til å danse? (1-100)', unit:'', min:1, max:100 },
-  { type:'scale', text:'Hvor mye liker du å være alene? (1-100)', unit:'', min:1, max:100 },
-  { type:'scale', text:'Hvor flink er du til å lage mat? (1-100)', unit:'', min:1, max:100 },
-  { type:'scale', text:'Hvor lett blir du sjalu? (1-100)', unit:'', min:1, max:100 },
   { type:'scale', text:'Hvor godt synger du? (1-100)', unit:'', min:1, max:100 },
-  { type:'scale', text:'Hvor ofte sjekker du mobilen? (1-100)', unit:'', min:1, max:100 },
-  { type:'scale', text:'Hvor romantisk er du? (1-100)', unit:'', min:1, max:100 },
   { type:'scale', text:'Hvor flink er du til å holde på en hemmelighet? (1-100)', unit:'', min:1, max:100 },
+  // Åpne tall-spørsmål
+  { type:'number', text:'Hvor mange par sko eier du?', unit:'par' },
+  { type:'number', text:'Hvor mange par sokker eier du?', unit:'par' },
+  { type:'number', text:'Hvor mange T-skjorter eier du?', unit:'' },
   { type:'number', text:'Hvor mange timer søvn fikk du i går?', unit:'timer' },
   { type:'number', text:'Hvor mange land har du besøkt?', unit:'land' },
   { type:'number', text:'Hvor mange kopper kaffe drikker du per uke?', unit:'kopper' },
@@ -71,7 +82,31 @@ const QUESTIONS = [
   { type:'number', text:'Hvor mange timer skjermtid har du per dag?', unit:'timer' },
   { type:'number', text:'Hvor mange kjæledyr har du hatt totalt?', unit:'' },
   { type:'number', text:'Hvor mange ganger har du vært forelsket?', unit:'' },
-  { type:'number', text:'Hvor mange par sko eier du?', unit:'par' },
+  { type:'number', text:'Hvor mange filmer ser du i måneden?', unit:'filmer' },
+  { type:'number', text:'Hvor mange meldinger sender du per dag i snitt?', unit:'meld.' },
+  { type:'number', text:'Hvor mange ganger spiser du ute i måneden?', unit:'ganger' },
+  { type:'number', text:'Hvor mange minutter bruker du i dusjen?', unit:'min' },
+  { type:'number', text:'Hvor mange jobber har du hatt totalt?', unit:'' },
+  { type:'number', text:'Hvor mange søsken har du?', unit:'' },
+  { type:'number', text:'Hvor mange fettere/kusiner har du?', unit:'' },
+  { type:'number', text:'Hvor mange selfies tar du i uka?', unit:'' },
+  { type:'number', text:'Hvor mange par briller/solbriller eier du?', unit:'par' },
+  { type:'number', text:'Hvor mange tatoveringer har du?', unit:'' },
+  { type:'number', text:'Hvor mange piercinger har du (eller har hatt)?', unit:'' },
+  { type:'number', text:'Hvor mange konserter har du vært på?', unit:'' },
+  { type:'number', text:'Hvor mange ganger har du brukket noe?', unit:'ganger' },
+  { type:'number', text:'Hvor mange penner har du i hjemmet ditt akkurat nå?', unit:'' },
+  { type:'number', text:'Hvor mange timer per uke ser du på TV/streaming?', unit:'timer' },
+  { type:'number', text:'Hvor mange ganger har du falt offentlig på et flaut sted?', unit:'ganger' },
+  { type:'number', text:'Hvor mange språk kan du si "hei" på?', unit:'språk' },
+  { type:'number', text:'Hvor mange dyr klarer du å nevne på 30 sekunder?', unit:'dyr' },
+  { type:'number', text:'Hvor mange ganger sjekker du e-post om dagen?', unit:'' },
+  { type:'number', text:'Hvor mange ulike apper er på telefonen din?', unit:'apper' },
+  { type:'number', text:'Hvor mange timer har du brukt på et dataspill mest?', unit:'timer' },
+  { type:'number', text:'Hvor mange bursdager glemmer du i året?', unit:'' },
+  { type:'number', text:'Hvor mange gaver kjøper du i året?', unit:'gaver' },
+  { type:'number', text:'Hvor mange koster en typisk handletur for deg? (kr)', unit:'kr' },
+  { type:'number', text:'Hvor gammel håper du å bli?', unit:'år' },
 ];
 
 // ============= STATE =============
@@ -81,18 +116,23 @@ const state = {
   screen: 'home',
   myName: '',
   myId: null,
-  hostConn: null,       // for player: conn to host
+  hostConn: null,
   peer: null,
   // host-only
   roomCode: null,
-  conns: new Map(),     // playerId -> {conn, name, answered}
-  hostState: 'lobby',   // lobby | answering | reveal | done
+  conns: new Map(),     // playerId -> {conn, name, answered, guessed}
+  hostState: 'lobby',   // lobby | answering | guessing | reveal | done
   question: null,
-  answers: new Map(),   // playerName -> value
+  answers: new Map(),         // playerName -> value (host-only)
+  guesses: new Map(),         // guesserName -> {targetName: value} (host-only)
+  totalScores: new Map(),     // playerName -> total points
   usedQuestions: new Set(),
+  // mine
   myAnswer: null,
-  // player-only mirror
+  myGuessesSubmitted: false,
+  // mirror (both)
   lobbyPlayers: [],
+  guessTargets: [],           // names to guess (player view)
   revealData: null,
   errMsg: '',
 };
@@ -113,11 +153,11 @@ function startHost() {
   state.peer = new Peer(ROOM_PREFIX + code);
   state.peer.on('open', id => {
     state.myId = id;
+    state.totalScores.set(state.myName, 0);
     render();
   });
   state.peer.on('error', err => {
     if (err.type === 'unavailable-id') {
-      // retry with a new code
       state.peer.destroy();
       startHost();
     } else {
@@ -135,14 +175,14 @@ function startHost() {
 
 function onHostData(conn, data) {
   if (data.type === 'join') {
-    // Reject duplicate names
-    const existing = [...state.conns.values()].some(c => c.name === data.name);
+    const existing = [...state.conns.values()].some(c => c.name === data.name) || data.name === state.myName;
     if (existing || state.conns.size >= 9) {
       conn.send({ type:'rejected', reason: existing ? 'Navnet er tatt' : 'Rommet er fullt' });
       conn.close();
       return;
     }
-    state.conns.set(conn.peer, { conn, name: data.name, answered: false });
+    state.conns.set(conn.peer, { conn, name: data.name, answered: false, guessed: false });
+    if (!state.totalScores.has(data.name)) state.totalScores.set(data.name, 0);
     broadcastLobby();
   } else if (data.type === 'answer') {
     const p = state.conns.get(conn.peer);
@@ -151,6 +191,13 @@ function onHostData(conn, data) {
     p.answered = true;
     broadcastLobby();
     checkAllAnswered();
+  } else if (data.type === 'guesses') {
+    const p = state.conns.get(conn.peer);
+    if (!p || state.hostState !== 'guessing') return;
+    state.guesses.set(p.name, data.guesses || {});
+    p.guessed = true;
+    broadcastLobby();
+    checkAllGuessed();
   }
 }
 
@@ -158,12 +205,13 @@ function removePlayer(peerId) {
   state.conns.delete(peerId);
   broadcastLobby();
   if (state.hostState === 'answering') checkAllAnswered();
+  if (state.hostState === 'guessing') checkAllGuessed();
 }
 
 function broadcastLobby() {
   const players = [
-    { name: state.myName, isHost: true, answered: state.myAnswer != null },
-    ...[...state.conns.values()].map(c => ({ name: c.name, isHost: false, answered: c.answered })),
+    { name: state.myName, isHost: true, answered: state.myAnswer != null, guessed: state.myGuessesSubmitted, totalScore: state.totalScores.get(state.myName) || 0 },
+    ...[...state.conns.values()].map(c => ({ name: c.name, isHost: false, answered: c.answered, guessed: c.guessed, totalScore: state.totalScores.get(c.name) || 0 })),
   ];
   state.lobbyPlayers = players;
   send({ type:'lobby', players });
@@ -178,6 +226,12 @@ function send(msg) {
 
 function checkAllAnswered() {
   const allDone = [...state.conns.values()].every(c => c.answered) && state.myAnswer != null;
+  if (allDone && state.conns.size > 0) startGuessPhase();
+  else if (allDone && state.conns.size === 0) doReveal(); // shouldn't happen
+}
+
+function checkAllGuessed() {
+  const allDone = [...state.conns.values()].every(c => c.guessed) && state.myGuessesSubmitted;
   if (allDone) doReveal();
 }
 
@@ -193,25 +247,70 @@ function nextQuestion() {
   state.usedQuestions.add(pick.i);
   state.question = pick.q;
   state.answers = new Map();
+  state.guesses = new Map();
   state.myAnswer = null;
-  for (const c of state.conns.values()) c.answered = false;
+  state.myGuessesSubmitted = false;
+  for (const c of state.conns.values()) { c.answered = false; c.guessed = false; }
   state.hostState = 'answering';
   send({ type:'question', question: pick.q });
   broadcastLobby();
   render();
 }
 
+function startGuessPhase() {
+  state.hostState = 'guessing';
+  const targets = state.lobbyPlayers.map(p => p.name); // everyone (UIs hide self)
+  state.guessTargets = targets;
+  send({ type:'guess-phase', targets });
+  broadcastLobby();
+  render();
+}
+
+function scoreGuess(guess, actual) {
+  if (guess == null || isNaN(guess)) return 0;
+  const diff = Math.abs(guess - actual);
+  if (diff === 0) return 10;
+  const tol1 = Math.max(Math.abs(actual) * 0.10, 2);
+  const tol2 = Math.max(Math.abs(actual) * 0.25, 5);
+  if (diff <= tol1) return 5;
+  if (diff <= tol2) return 2;
+  return 0;
+}
+
 function doReveal() {
+  // Compute round scores
+  const roundScores = {};
+  for (const name of state.lobbyPlayers.map(p => p.name)) roundScores[name] = 0;
+
+  for (const [guesser, guesses] of state.guesses.entries()) {
+    for (const [target, val] of Object.entries(guesses)) {
+      if (target === guesser) continue;
+      const actual = state.answers.get(target);
+      if (actual == null) continue;
+      roundScores[guesser] = (roundScores[guesser] || 0) + scoreGuess(val, actual);
+    }
+  }
+
+  // Update totals
+  for (const [name, pts] of Object.entries(roundScores)) {
+    state.totalScores.set(name, (state.totalScores.get(name) || 0) + pts);
+  }
+
+  const totals = Object.fromEntries(state.totalScores);
   const sorted = [...state.answers.entries()].sort((a,b)=>a[1]-b[1]);
-  state.revealData = { sorted, question: state.question };
+  state.revealData = { sorted, question: state.question, roundScores, totals };
   state.hostState = 'reveal';
-  send({ type:'reveal', sorted, question: state.question });
+  send({ type:'reveal', sorted, question: state.question, roundScores, totals });
+  broadcastLobby();
   render();
 }
 
 function endGame() {
   state.hostState = 'done';
-  send({ type:'done' });
+  const totals = Object.fromEntries(state.totalScores);
+  send({ type:'done', totals });
+  state.revealData = state.revealData || { totals };
+  state.revealData.totals = totals;
   render();
 }
 
@@ -241,28 +340,30 @@ function joinRoom(code, name) {
 function onPlayerData(data) {
   if (data.type === 'rejected') {
     state.errMsg = data.reason;
+    state.role = null;
     state.screen = 'home';
     render();
   } else if (data.type === 'lobby') {
     state.lobbyPlayers = data.players;
-    if (state.screen !== 'answer' && state.screen !== 'reveal') {
-      state.screen = 'lobby';
-    } else {
-      // just refresh sidebar info if any
-      render();
-      return;
-    }
+    if (state.screen === 'connecting') state.screen = 'lobby';
     render();
   } else if (data.type === 'question') {
     state.question = data.question;
     state.myAnswer = null;
+    state.myGuessesSubmitted = false;
     state.screen = 'answer';
     render();
+  } else if (data.type === 'guess-phase') {
+    state.guessTargets = data.targets;
+    state.screen = 'guess';
+    render();
   } else if (data.type === 'reveal') {
-    state.revealData = { sorted: data.sorted, question: data.question };
+    state.revealData = { sorted: data.sorted, question: data.question, roundScores: data.roundScores, totals: data.totals };
     state.screen = 'reveal';
     render();
   } else if (data.type === 'done') {
+    state.revealData = state.revealData || {};
+    state.revealData.totals = data.totals;
     state.screen = 'done';
     render();
   }
@@ -277,8 +378,21 @@ function submitAnswer(value) {
   } else {
     state.hostConn.send({ type:'answer', value });
     state.myAnswer = value;
+    render();
   }
-  render();
+}
+
+function submitGuesses(guesses) {
+  if (state.role === 'host') {
+    state.guesses.set(state.myName, guesses);
+    state.myGuessesSubmitted = true;
+    broadcastLobby();
+    checkAllGuessed();
+  } else {
+    state.hostConn.send({ type:'guesses', guesses });
+    state.myGuessesSubmitted = true;
+    render();
+  }
 }
 
 // ============= RENDERERS =============
@@ -366,6 +480,7 @@ function renderHost() {
   if (!state.myId) { renderConnecting(); return; }
   if (state.hostState === 'lobby') renderLobby();
   else if (state.hostState === 'answering') renderAnswerOrWait();
+  else if (state.hostState === 'guessing') renderGuessOrWait();
   else if (state.hostState === 'reveal') renderReveal();
   else if (state.hostState === 'done') renderDone();
 }
@@ -374,6 +489,7 @@ function renderPlayer() {
   if (state.screen === 'connecting') return renderConnecting();
   if (state.screen === 'lobby') return renderLobby();
   if (state.screen === 'answer') return renderAnswerOrWait();
+  if (state.screen === 'guess') return renderGuessOrWait();
   if (state.screen === 'reveal') return renderReveal();
   if (state.screen === 'done') return renderDone();
   if (state.screen === 'joinForm') return renderJoinForm();
@@ -394,7 +510,8 @@ function renderConnecting() {
 function renderLobby() {
   const isHost = state.role === 'host';
   const players = state.lobbyPlayers.length ? state.lobbyPlayers
-    : [{ name: state.myName, isHost: true, answered: false }];
+    : [{ name: state.myName, isHost: true, answered: false, totalScore: 0 }];
+  const hasScores = players.some(p => p.totalScore > 0);
   const w = el('div');
   w.innerHTML = `
     <h2>${isHost ? 'Ditt rom' : 'Venter på vert…'}</h2>
@@ -405,9 +522,11 @@ function renderLobby() {
     ` : `<p class="info">Du er med! Vent til verten starter spillet.</p>`}
     <h2 style="margin-top:24px;">Spillere (${players.length})</h2>
     <ul class="players">
-      ${players.map(p => `<li><span>${escapeHtml(p.name)}${p.isHost?'<span class="badge-host">VERT</span>':''}</span></li>`).join('')}
+      ${players.map(p => `<li>
+        <span>${escapeHtml(p.name)}${p.isHost?'<span class="badge-host">VERT</span>':''}${hasScores?`<span class="total-score">${p.totalScore||0} p</span>`:''}</span>
+      </li>`).join('')}
     </ul>
-    ${isHost ? `<button id="start" ${players.length<2?'disabled':''}>Start spillet</button>` : ''}
+    ${isHost ? `<button id="start" ${players.length<2?'disabled':''}>${hasScores?'Neste runde':'Start spillet'}</button>` : ''}
     <button id="leave" class="ghost">Forlat</button>
   `;
   root.append(w);
@@ -417,16 +536,14 @@ function renderLobby() {
 
 function renderAnswerOrWait() {
   const q = state.question;
-  const isHost = state.role === 'host';
-  const allPlayers = isHost ? state.lobbyPlayers : state.lobbyPlayers;
-  const waitingFor = allPlayers.filter(p => !p.answered).map(p => p.name);
+  const allPlayers = state.lobbyPlayers;
   const myDone = state.myAnswer != null;
   const w = el('div');
   if (myDone) {
     w.innerHTML = `
       <p class="progress">Venter på de andre…</p>
       <div class="question">${escapeHtml(q.text)}</div>
-      <p class="info">Ditt svar er låst inn: <b style="color:var(--accent)">${formatNum(state.myAnswer)}${q.unit?' '+escapeHtml(q.unit):''}</b></p>
+      <div class="my-answer">Ditt svar er låst inn: <b>${formatNum(state.myAnswer)}${q.unit?' '+escapeHtml(q.unit):''}</b></div>
       <ul class="players">
         ${allPlayers.map(p => `<li><span>${escapeHtml(p.name)}${p.isHost?'<span class="badge-host">VERT</span>':''}</span><span class="status ${p.answered?'done':''}">${p.answered?'✓ svart':'…tenker'}</span></li>`).join('')}
       </ul>
@@ -434,10 +551,11 @@ function renderAnswerOrWait() {
   } else {
     const hint = q.type === 'scale' ? `Tall mellom ${q.min} og ${q.max}` : 'Skriv et tall';
     w.innerHTML = `
+      <p class="progress">Steg 1 av 2 — Svar</p>
       <div class="question">${escapeHtml(q.text)}</div>
       <input type="number" id="val" inputmode="decimal" placeholder="${hint}" ${q.type==='scale'?`min="${q.min}" max="${q.max}"`:''} />
       <button id="ok">Lås inn svar</button>
-      <p class="info">Bare svaret ditt sendes — ingen ser tallet før alle har svart.</p>
+      <p class="info">Bare svaret ditt sendes — ingen ser tallet før alle har gjettet.</p>
     `;
   }
   root.append(w);
@@ -455,13 +573,72 @@ function renderAnswerOrWait() {
   }
 }
 
+function renderGuessOrWait() {
+  const q = state.question;
+  const allPlayers = state.lobbyPlayers;
+  const myDone = state.myGuessesSubmitted;
+  const targets = (state.guessTargets.length ? state.guessTargets : allPlayers.map(p=>p.name))
+    .filter(n => n !== state.myName);
+  const w = el('div');
+  if (myDone) {
+    w.innerHTML = `
+      <p class="progress">Venter på de andre…</p>
+      <div class="question">${escapeHtml(q.text)}</div>
+      <div class="my-answer">Ditt svar var: <b>${formatNum(state.myAnswer)}${q.unit?' '+escapeHtml(q.unit):''}</b></div>
+      <ul class="players">
+        ${allPlayers.map(p => `<li><span>${escapeHtml(p.name)}${p.isHost?'<span class="badge-host">VERT</span>':''}</span><span class="status ${p.guessed?'done':''}">${p.guessed?'✓ gjettet':'…gjetter'}</span></li>`).join('')}
+      </ul>
+    `;
+  } else {
+    w.innerHTML = `
+      <p class="progress">Steg 2 av 2 — Gjett de andres svar</p>
+      <div class="question">${escapeHtml(q.text)}</div>
+      <div class="my-answer">Ditt svar: <b>${formatNum(state.myAnswer)}${q.unit?' '+escapeHtml(q.unit):''}</b></div>
+      <p class="info">Hva tror du de andre svarte? 10 p eksakt · 5 p nær · 2 p litt nær.</p>
+      <div id="guesses">
+        ${targets.map(n => `
+          <div class="guess-row">
+            <div class="gname">${escapeHtml(n)}</div>
+            <input type="number" inputmode="decimal" data-target="${escapeHtml(n)}" placeholder="?" ${q.type==='scale'?`min="${q.min}" max="${q.max}"`:''} />
+          </div>
+        `).join('')}
+      </div>
+      <button id="ok">Lås inn gjetninger</button>
+    `;
+  }
+  root.append(w);
+  if (!myDone) {
+    const inputs = w.querySelectorAll('input[data-target]');
+    if (inputs[0]) inputs[0].focus();
+    function go() {
+      const guesses = {};
+      for (const inp of inputs) {
+        const v = parseFloat(inp.value);
+        if (!Number.isNaN(v)) guesses[inp.dataset.target] = v;
+      }
+      submitGuesses(guesses);
+    }
+    w.querySelector('#ok').onclick = go;
+    inputs.forEach((inp,i) => {
+      inp.onkeydown = e => {
+        if (e.key === 'Enter') {
+          if (i < inputs.length - 1) inputs[i+1].focus();
+          else go();
+        }
+      };
+    });
+  }
+}
+
 function renderReveal() {
   const isHost = state.role === 'host';
-  const { sorted, question: q } = state.revealData;
+  const { sorted, question: q, roundScores = {}, totals = {} } = state.revealData;
   const minVal = sorted[0][1], maxVal = sorted[sorted.length-1][1];
+  const totalsArr = Object.entries(totals).sort((a,b) => b[1]-a[1]);
   const w = el('div');
   w.innerHTML = `
     <div class="question">${escapeHtml(q.text)}</div>
+    <h3 style="margin:0 0 8px; color:var(--accent); font-size:14px;">SVAR</h3>
     <ul class="reveal-list">
       ${sorted.map(([name,val]) => {
         const badge = minVal === maxVal ? ''
@@ -470,6 +647,18 @@ function renderReveal() {
         return `<li><span>${escapeHtml(name)} ${badge}</span><span class="answer">${formatNum(val)}${q.unit?' '+escapeHtml(q.unit):''}</span></li>`;
       }).join('')}
     </ul>
+    <div class="scoreboard">
+      <h3>RUNDE-POENG</h3>
+      ${Object.entries(roundScores).sort((a,b)=>b[1]-a[1]).map(([name, pts]) =>
+        `<div class="row-s"><span>${escapeHtml(name)}</span><span class="${pts>0?'score-pos':'score-zero'}">+${pts} p</span></div>`
+      ).join('')}
+    </div>
+    <div class="scoreboard">
+      <h3>TOTALT</h3>
+      ${totalsArr.map(([name, pts], i) =>
+        `<div class="row-s"><span>${i===0?'🏆 ':''}${escapeHtml(name)}</span><span class="score-pos">${pts} p</span></div>`
+      ).join('')}
+    </div>
     ${isHost ? `<button id="next">Neste spørsmål</button><button id="end" class="ghost">Avslutt</button>` : `<p class="info">Venter på at verten starter neste runde…</p>`}
   `;
   root.append(w);
@@ -480,11 +669,17 @@ function renderReveal() {
 }
 
 function renderDone() {
+  const totals = (state.revealData && state.revealData.totals) || {};
+  const totalsArr = Object.entries(totals).sort((a,b)=>b[1]-a[1]);
   const w = el('div');
   w.innerHTML = `
-    <h1>Takk for spillet! 👋</h1>
-    <p class="sub">Last inn siden for å spille igjen.</p>
-    <button onclick="location.reload()">Start på nytt</button>
+    <h1>🏆 Sluttresultat</h1>
+    <div class="scoreboard">
+      ${totalsArr.map(([name, pts], i) =>
+        `<div class="row-s" style="font-size:${i===0?'22px':'18px'}; padding:8px 0;"><span>${i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':''}${escapeHtml(name)}</span><span class="score-pos">${pts} p</span></div>`
+      ).join('')}
+    </div>
+    <button onclick="location.reload()">Spill igjen</button>
   `;
   root.append(w);
 }
