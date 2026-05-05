@@ -382,7 +382,12 @@ function renderPlayer() {
 
 function renderConnecting() {
   const w = el('div');
-  w.innerHTML = `<h2>Kobler til…</h2><p class="info">Hvis dette tar lang tid, prøv igjen.</p>`;
+  w.innerHTML = `
+    <h2>Kobler til…</h2>
+    <p class="info">Tar dette mer enn 10 sekunder er det sannsynligvis brannmur eller PeerJS-serveren som er nede.</p>
+    ${state.errMsg ? `<div class="err">${escapeHtml(state.errMsg)}</div>` : ''}
+    <button class="ghost" onclick="location.reload()">Prøv på nytt</button>
+  `;
   root.append(w);
 }
 
