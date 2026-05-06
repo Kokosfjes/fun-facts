@@ -6,7 +6,7 @@
 <title>Countdown to June 17, 2026</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
+  html, body { height: 100%; overflow-x: hidden; }
   body {
     font-family: 'Segoe UI', Tahoma, Geneva, sans-serif;
     background: linear-gradient(135deg, #1e3c72 0%, #2a5298 50%, #6a3093 100%);
@@ -18,7 +18,21 @@
     min-height: 100vh;
     padding: 1rem;
     text-align: center;
+    transition: background 0.6s, filter 0.6s, transform 0.6s;
+    position: relative;
   }
+  body.disco {
+    animation: disco 0.6s steps(1) infinite;
+  }
+  @keyframes disco {
+    0% { background: linear-gradient(135deg, #ff006e, #fb5607); }
+    25% { background: linear-gradient(135deg, #ffbe0b, #8338ec); }
+    50% { background: linear-gradient(135deg, #3a86ff, #06ffa5); }
+    75% { background: linear-gradient(135deg, #ff006e, #ffbe0b); }
+  }
+  body.flipped { transform: rotate(180deg); }
+  body.matrix { background: #000 !important; }
+
   h1 {
     font-size: clamp(1.5rem, 4vw, 2.5rem);
     font-weight: 300;
@@ -26,11 +40,15 @@
     margin-bottom: 2rem;
     text-transform: uppercase;
     opacity: 0.9;
+    cursor: pointer;
+    user-select: none;
   }
   .target {
     font-size: clamp(1rem, 2.5vw, 1.25rem);
     margin-bottom: 3rem;
     opacity: 0.7;
+    cursor: pointer;
+    user-select: none;
   }
   .countdown {
     display: flex;
@@ -46,6 +64,16 @@
     padding: clamp(1rem, 3vw, 2rem);
     min-width: clamp(80px, 15vw, 140px);
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s, box-shadow 0.3s, border-color 0.3s;
+  }
+  .unit.golden {
+    border-color: gold;
+    box-shadow: 0 0 30px gold;
+  }
+  .unit.pulse { animation: pulse 0.6s ease; }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.15); }
   }
   .value {
     font-size: clamp(2rem, 6vw, 4rem);
@@ -61,39 +89,114 @@
     opacity: 0.8;
   }
   .ms .value { min-width: 3ch; }
-  .done {
-    font-size: clamp(1.5rem, 5vw, 3rem);
-    margin-top: 2rem;
+  .done { font-size: clamp(1.5rem, 5vw, 3rem); margin-top: 2rem; }
+
+  /* Easter egg layer */
+  #fx {
+    position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 9999;
+  }
+  .floater {
+    position: absolute;
+    font-size: 2rem;
+    animation: fall linear forwards;
+    will-change: transform;
+  }
+  @keyframes fall {
+    from { transform: translateY(-10vh) rotate(0); }
+    to { transform: translateY(110vh) rotate(720deg); }
+  }
+  .pop {
+    position: absolute;
+    font-size: 3rem;
+    animation: pop 1.2s ease-out forwards;
+  }
+  @keyframes pop {
+    0% { transform: scale(0); opacity: 0; }
+    30% { transform: scale(1.4); opacity: 1; }
+    100% { transform: scale(1) translateY(-80px); opacity: 0; }
+  }
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.7);
+    padding: 0.75rem 1.25rem;
+    border-radius: 999px;
+    font-size: 0.9rem;
+    z-index: 10000;
+    animation: toastIn 0.4s ease, toastOut 0.4s ease 2.4s forwards;
+  }
+  @keyframes toastIn { from { opacity: 0; transform: translate(-50%, 20px); } }
+  @keyframes toastOut { to { opacity: 0; transform: translate(-50%, 20px); } }
+
+  .matrix-canvas {
+    position: fixed; inset: 0; z-index: 5; pointer-events: none;
+  }
+
+  .cat {
+    position: fixed;
+    bottom: 10px;
+    right: -200px;
+    font-size: 4rem;
+    z-index: 9998;
+    transition: right 1s ease;
+  }
+  .cat.show { right: 20px; }
+
+  .hint {
+    position: fixed;
+    top: 10px;
+    right: 14px;
+    font-size: 0.7rem;
+    opacity: 0.35;
+    user-select: none;
+  }
+
+  .ufo {
+    position: fixed;
+    top: 20%;
+    left: -200px;
+    font-size: 3rem;
+    z-index: 9998;
+    animation: cross 6s linear forwards;
+  }
+  @keyframes cross {
+    to { left: 110vw; top: 60%; }
   }
 </style>
 </head>
 <body>
-  <h1>Counting down to</h1>
-  <div class="target">June 17, 2026 &middot; 00:00:00</div>
+  <div class="hint">try typing things…</div>
+  <h1 id="title">Counting down to</h1>
+  <div class="target" id="target">June 17, 2026 &middot; 00:00:00</div>
   <div class="countdown" id="countdown">
-    <div class="unit"><div class="value" id="days">0</div><div class="label">Days</div></div>
-    <div class="unit"><div class="value" id="hours">0</div><div class="label">Hours</div></div>
-    <div class="unit"><div class="value" id="minutes">0</div><div class="label">Minutes</div></div>
-    <div class="unit"><div class="value" id="seconds">0</div><div class="label">Seconds</div></div>
-    <div class="unit ms"><div class="value" id="ms">0</div><div class="label">Milliseconds</div></div>
+    <div class="unit" data-u="days"><div class="value" id="days">0</div><div class="label">Days</div></div>
+    <div class="unit" data-u="hours"><div class="value" id="hours">0</div><div class="label">Hours</div></div>
+    <div class="unit" data-u="minutes"><div class="value" id="minutes">0</div><div class="label">Minutes</div></div>
+    <div class="unit" data-u="seconds"><div class="value" id="seconds">0</div><div class="label">Seconds</div></div>
+    <div class="unit ms" data-u="ms"><div class="value" id="ms">0</div><div class="label">Milliseconds</div></div>
   </div>
-  <div class="done" id="done" style="display:none;">It's here!</div>
+  <div class="done" id="done" style="display:none;">It's here! 🎉</div>
+
+  <div id="fx"></div>
+  <div class="cat" id="cat">🐱</div>
 
 <script>
+  // ===== Countdown =====
   const target = new Date('2026-06-17T00:00:00').getTime();
-  const $days = document.getElementById('days');
-  const $hours = document.getElementById('hours');
-  const $minutes = document.getElementById('minutes');
-  const $seconds = document.getElementById('seconds');
-  const $ms = document.getElementById('ms');
-  const $countdown = document.getElementById('countdown');
-  const $done = document.getElementById('done');
+  const $ = id => document.getElementById(id);
+  const $days = $('days'), $hours = $('hours'), $minutes = $('minutes'),
+        $seconds = $('seconds'), $ms = $('ms'),
+        $countdown = $('countdown'), $done = $('done'), $fx = $('fx');
 
+  let lastSec = -1;
   function tick() {
     const diff = target - Date.now();
     if (diff <= 0) {
       $countdown.style.display = 'none';
       $done.style.display = 'block';
+      if (!window._partyDone) { window._partyDone = true; rain('🎉🎊🥳🎈✨', 200, 6000); }
       return;
     }
     const days = Math.floor(diff / 86400000);
@@ -106,9 +209,206 @@
     $minutes.textContent = String(minutes).padStart(2, '0');
     $seconds.textContent = String(seconds).padStart(2, '0');
     $ms.textContent = String(ms).padStart(3, '0');
+
+    // Golden border when days === 17
+    document.querySelector('[data-u="days"]').classList.toggle('golden', days === 17);
+
+    // Pulse on every second tick
+    if (seconds !== lastSec) {
+      lastSec = seconds;
+      const u = document.querySelector('[data-u="seconds"]');
+      u.classList.remove('pulse'); void u.offsetWidth; u.classList.add('pulse');
+
+      // Egg: when seconds === 17 → mini celebration
+      if (seconds === 17) popEmoji('🎂', window.innerWidth/2, window.innerHeight/2);
+      // Egg: minutes === 17 && seconds === 0 → bigger
+      if (minutes === 17 && seconds === 0) rain('🎈🎉', 30, 3000);
+      // Egg: hours === 17 → ufo flies by
+      if (hours === 17 && minutes === 0 && seconds === 0) launchUfo();
+    }
+
     requestAnimationFrame(tick);
   }
   tick();
+
+  // ===== FX helpers =====
+  function rand(a, b) { return a + Math.random() * (b - a); }
+  function pick(s) { return s[Math.floor(Math.random() * s.length)]; }
+
+  function rain(chars, count = 60, duration = 4000) {
+    for (let i = 0; i < count; i++) {
+      const f = document.createElement('div');
+      f.className = 'floater';
+      f.textContent = pick(chars);
+      f.style.left = rand(0, 100) + 'vw';
+      f.style.fontSize = rand(1.5, 3.5) + 'rem';
+      const d = rand(duration * 0.6, duration * 1.2);
+      f.style.animationDuration = d + 'ms';
+      f.style.animationDelay = rand(0, duration * 0.4) + 'ms';
+      $fx.appendChild(f);
+      setTimeout(() => f.remove(), d + 1000);
+    }
+  }
+
+  function popEmoji(emoji, x, y) {
+    const p = document.createElement('div');
+    p.className = 'pop';
+    p.textContent = emoji;
+    p.style.left = (x - 30) + 'px';
+    p.style.top = (y - 30) + 'px';
+    $fx.appendChild(p);
+    setTimeout(() => p.remove(), 1300);
+  }
+
+  function toast(msg) {
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.textContent = msg;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 3000);
+  }
+
+  function launchUfo() {
+    const u = document.createElement('div');
+    u.className = 'ufo';
+    u.textContent = '🛸';
+    document.body.appendChild(u);
+    setTimeout(() => u.remove(), 6500);
+  }
+
+  // ===== Konami code =====
+  const konami = ['ArrowUp','ArrowUp','ArrowDown','ArrowDown','ArrowLeft','ArrowRight','ArrowLeft','ArrowRight','b','a'];
+  let kIdx = 0;
+  document.addEventListener('keydown', e => {
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    if (k === konami[kIdx]) {
+      kIdx++;
+      if (kIdx === konami.length) {
+        kIdx = 0;
+        toast('🕹️ Konami! 30 ekstra liv');
+        rain('💚⭐🎮🍄', 120, 5000);
+      }
+    } else {
+      kIdx = (k === konami[0]) ? 1 : 0;
+    }
+  });
+
+  // ===== Type-a-word triggers =====
+  const buffer = [];
+  const words = {
+    june:    () => { toast('🌞 June vibes'); rain('☀️🌻🌊🍦', 80, 4000); },
+    party:   () => { document.body.classList.toggle('disco'); toast('🪩 Disco!'); },
+    cat:     () => { const c = $('cat'); c.classList.add('show'); setTimeout(() => c.classList.remove('show'), 4000); },
+    norge:   () => { toast('🇳🇴 Heia Norge'); rain('🇳🇴', 60, 4000); },
+    snow:    () => rain('❄️☃️', 100, 6000),
+    pizza:   () => rain('🍕', 50, 4000),
+    love:    () => rain('❤️💖💕', 80, 4000),
+    flip:    () => document.body.classList.toggle('flipped'),
+    matrix:  () => startMatrix(),
+    bored:   () => { toast('Spill et spill: piltastene + B + A'); },
+    hi:      () => toast('hei hei 👋'),
+    secret:  () => toast('🤫 du fant en hemmelighet'),
+    rocket:  () => rain('🚀⭐', 60, 4000),
+    bday:    () => rain('🎂🎁🎈', 80, 5000),
+  };
+  const maxLen = Math.max(...Object.keys(words).map(w => w.length));
+  document.addEventListener('keydown', e => {
+    if (e.key.length !== 1) return;
+    buffer.push(e.key.toLowerCase());
+    if (buffer.length > maxLen) buffer.shift();
+    const s = buffer.join('');
+    for (const w of Object.keys(words)) {
+      if (s.endsWith(w)) { words[w](); buffer.length = 0; break; }
+    }
+  });
+
+  // ===== Click counters =====
+  let titleClicks = 0;
+  $('title').addEventListener('click', () => {
+    titleClicks++;
+    if (titleClicks === 5) { document.body.classList.toggle('flipped'); toast('🙃'); titleClicks = 0; }
+  });
+  let dateClicks = 0;
+  $('target').addEventListener('click', () => {
+    dateClicks++;
+    if (dateClicks === 7) {
+      toast('17. juni 2026 — sankthansaften nærmer seg 🔥');
+      rain('🔥✨', 60, 4000);
+      dateClicks = 0;
+    }
+  });
+
+  // Triple-click body → matrix
+  let clickTimes = [];
+  document.body.addEventListener('click', e => {
+    clickTimes.push(Date.now());
+    clickTimes = clickTimes.filter(t => Date.now() - t < 600);
+    if (clickTimes.length >= 3) { startMatrix(); clickTimes = []; }
+  });
+
+  // Click on a unit → pop emoji at that spot
+  document.querySelectorAll('.unit').forEach(u => {
+    u.addEventListener('click', e => {
+      popEmoji(pick(['✨','🎉','💫','⚡','🌟']), e.clientX, e.clientY);
+    });
+  });
+
+  // ===== Matrix rain =====
+  let matrixActive = false;
+  function startMatrix() {
+    if (matrixActive) return;
+    matrixActive = true;
+    document.body.classList.add('matrix');
+    const c = document.createElement('canvas');
+    c.className = 'matrix-canvas';
+    c.width = innerWidth; c.height = innerHeight;
+    document.body.appendChild(c);
+    const ctx = c.getContext('2d');
+    const cols = Math.floor(innerWidth / 16);
+    const drops = Array(cols).fill(0).map(() => Math.random() * innerHeight / 16);
+    const chars = '01アカサタナハマヤラワJUNE17';
+    const iv = setInterval(() => {
+      ctx.fillStyle = 'rgba(0,0,0,0.08)';
+      ctx.fillRect(0, 0, c.width, c.height);
+      ctx.fillStyle = '#0f0';
+      ctx.font = '16px monospace';
+      drops.forEach((y, i) => {
+        ctx.fillText(pick(chars), i * 16, y * 16);
+        drops[i] = y * 16 > innerHeight && Math.random() > 0.975 ? 0 : y + 1;
+      });
+    }, 50);
+    setTimeout(() => {
+      clearInterval(iv); c.remove();
+      document.body.classList.remove('matrix');
+      matrixActive = false;
+    }, 8000);
+  }
+
+  // ===== Random surprise every few minutes =====
+  setInterval(() => {
+    if (Math.random() < 0.5) {
+      const ideas = [
+        () => popEmoji('⭐', rand(50, innerWidth-50), rand(50, innerHeight-50)),
+        () => rain('✨', 15, 3000),
+        () => launchUfo(),
+        () => popEmoji('🌈', rand(50, innerWidth-50), rand(50, innerHeight-50)),
+      ];
+      pick(ideas)();
+    }
+  }, 90000);
+
+  // ===== Greet at midnight (real time) =====
+  setInterval(() => {
+    const n = new Date();
+    if (n.getHours() === 0 && n.getMinutes() === 0 && n.getSeconds() < 2) {
+      rain('🌙⭐', 40, 4000);
+    }
+  }, 1000);
+
+  // ===== Hover the milliseconds → tiny sparkle =====
+  document.querySelector('[data-u="ms"]').addEventListener('mouseenter', e => {
+    popEmoji('✨', e.clientX, e.clientY);
+  });
 </script>
 </body>
 </html>
